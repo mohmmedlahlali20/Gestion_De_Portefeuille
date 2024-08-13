@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style/home.css">
     <title>Document</title>
 </head>
 <body>
@@ -23,12 +24,90 @@
         </div>
     </nav>
 
-    <div class="container mx-auto mt-6">
-        <h1 class="text-2xl font-bold">Hello, <%= user.name %>!</h1>
-        <h1 class="text-2xl font-bold">Hello, <%= user.email %>!</h1>
+    <div class="container mx-auto mt-6 text-center m-5">
+        <h1 class="text-2xl font-bold ">Hello, <%= user.name %>!</h1>
+        <p class="text-gray-600">Welcome to your personal finance management dashboard. Here, you can track your expenses, income, and balance, as well as set reminders for upcoming events.</p>
+    </div>
+
+    <main class="container mx-auto my-8 px-4">
+        <div class="mb-4">
+            <input type="text" placeholder="Search..." class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+            <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Historical transaction</h2>
+            <ul class="space-y-4">
+                <% Transaction.forEach(transaction => { %>
+                    <li class="border-b border-gray-200 pb-4">
+                        <div class="flex items-center justify-between">
+                            <div class="text-gray-700 font-medium"><%= transaction.type %></div>
+                            <span class="text-gray-500 text-sm"><%= new Date(transaction.date).toLocaleString() %></span>
+                            <form action="/update-transaction-type" method="POST">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <button id="updateTypeButton" class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">Update Type</button>
+                            </form>
+                        </div>
+                        <p class="text-gray-600 mt-2 ">Amount: <%= transaction.montant %></p>
+                        <p class="text-gray-600 mt-2">Category: <%= transaction.category_name %></p>
+                    </li>
+                <% }); %>
+            </ul>
+        </div>
+        <div id="div" class="bg-gray-800 container w-25 m-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="text-white text-2xl font-bold mb-4 text-center">Your Solde Actuel</h2>
+                    <% if (Transaction.length > 0) { %>
+                        <div class="flex">
+                            <p class="text-white">Total Transactions: <%= Transaction.length %></p>
+                            &nbsp;&nbsp;&nbsp;
+                        <p class="text-white">Total Amount: <%= Transaction.length %></p>
+                        </div>
+                        
+
+                    <% } else { %>
+                        <p class="text-white">No transactions found.</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+
+    <script>
+        document.getElementById('updateTypeButton').addEventListener('click', () => {
+            // Gather the necessary data to update
+            const transactionId = '1'; // Replace with the actual transaction ID
+            const newType = 'dépenses'; // Replace with the new type value you want to set
+        
+            // Make an AJAX request to update the transaction type
+            fetch('/update-transaction-type', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': '<%= csrfToken %>' // EJS tag to embed the CSRF token
+                },
+                body: JSON.stringify({
+                    id: transactionId,
+                    type: newType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Transaction type updated successfully!');
+                    // Optionally, refresh the page or update the UI
+                } else {
+                    alert('Failed to update transaction type.');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating transaction type:', error);
+                alert('An error occurred.');
+            });
+        });
+        </script>
         
 
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 </body>
