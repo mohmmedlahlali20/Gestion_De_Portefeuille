@@ -4,6 +4,8 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const methodOverride = require('method-override');
+
 const session = require('express-session');
 const secretKey = crypto.randomBytes(32).toString('hex');
 const app = express();
@@ -13,6 +15,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
 app.use(express.json());
 
 
@@ -128,15 +131,15 @@ app.get('/logout', (req, res) => {
 });
 
 //category routes
-app.get('/category' ,isAuthenticated , (req, res) => {
-    conn.query('SELECT * FROM Category', (err, results) => {
+app.get('/category', isAuthenticated, (req, res) => {
+    conn.query('SELECT * FROM Category', (err, categories) => {
         if (err) {
-            console.error('Error querying the database:', err);
-            return res.status(500).json({ error: 'An error occurred' });
+            console.error('Error fetching categories:', err);
+            return res.render('category', { errorMessage: 'An error occurred while fetching categories.' });
         }
-        res.render('category', { categories: results });
+        res.render('category', { categories }); 
     });
-})
+});
 
 //create new category
 app.post('/category', isAuthenticated, (req, res) => {
