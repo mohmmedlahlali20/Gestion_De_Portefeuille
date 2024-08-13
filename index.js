@@ -187,15 +187,16 @@ app.put('/category/:id', isAuthenticated, (req, res) => {
 app.delete('/category/:id', isAuthenticated, (req, res) => {
     const { id } = req.params;
 
-    conn.query('DELETE FROM Category WHERE id =?', [id], (err, result) => {
+    conn.query('DELETE FROM Category WHERE id = ?', [id], (err, result) => {
         if (err) {
             console.error('Error deleting category:', err);
             return res.status(500).json({ error: 'An error occurred' });
         }
         console.log('Category deleted:', result);
-        res.redirect('/category');
+        res.status(200).json({ message: 'Category deleted successfully' });
     });
 });
+
 
 
 
@@ -204,8 +205,6 @@ app.delete('/category/:id', isAuthenticated, (req, res) => {
 
 app.get('/transaction', isAuthenticated, (req, res) => {
     res.render('transaction');
-
-
 })
 
 app.listen(port, () => {

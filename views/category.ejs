@@ -36,7 +36,7 @@
                     <tr>
                         <th scope="col" class="px-6 py-3">Category ID</th>
                         <th scope="col" class="px-6 py-3">Category Name</th>
-                        <th scope="col" class="px-6 py-3 text-right"><span class="sr-only">Edit</span></th>
+                        <th scope="col" class="px-6 py-3 text-right"><span class="sr-only">Action</span></th>
                     </tr>
                 </thead>
                 <tbody id="categoryTableBody">
@@ -46,13 +46,18 @@
                             <td class="px-6 py-4 font-medium text-gray-900"><%= category.name %></td>
                             <td class="px-6 py-4 text-right">
                                 <button 
-                                class="text-indigo-600 hover:text-indigo-900 edit-button" 
-                                data-id="<%= category.id %>" 
-                                data-name="<%= category.name %>"
-                            >
-                                Edit
-                            </button>
-                            
+                                    class="text-indigo-600 hover:text-indigo-900 edit-button" 
+                                    data-id="<%= category.id %>" 
+                                    data-name="<%= category.name %>"
+                                >
+                                    Edit
+                                </button>
+                                <button 
+                                    class="text-red-600 hover:text-red-900 delete-button ml-2" 
+                                    data-id="<%= category.id %>"
+                                >
+                                    Delete
+                                </button>
                             </td>
                         </tr>
                     <% }) %>
@@ -73,7 +78,7 @@
                 </div>
                 <form id="categoryForm" action="/category" method="POST">
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-600 dark:text-gray-400">Category Name</label>
+                        <label for="categoryName" class="block text-sm font-medium text-gray-600 dark:text-gray-400">Category Name</label>
                         <input id="categoryName" type="text" name="name" class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700" required>
                     </div>
                     <div class="flex justify-end space-x-3">
@@ -85,56 +90,7 @@
         </div>
     </div>
     
-    <script>
-        const modal = document.getElementById('modal');
-        const openModalBtn = document.getElementById('openModal');
-        const closeModalBtn = document.getElementById('closeModal');
-        const closeModalButton = document.getElementById('closeModalButton');
-        const categoryForm = document.getElementById('categoryForm');
-        const modalTitle = document.getElementById('modalTitle');
-        const categoryName = document.getElementById('categoryName');
     
-        const openModal = () => {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-    
-        const closeModal = () => {
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-        }
-    
-        openModalBtn.addEventListener('click', () => {
-            categoryForm.action = '/category';
-            categoryForm.method = 'POST';
-            modalTitle.textContent = 'Add New Category';
-            categoryName.value = '';
-            openModal();
-        });
-    
-        document.querySelectorAll('.edit-button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const id = e.target.getAttribute('data-id');
-                const name = e.target.getAttribute('data-name');
-                
-                categoryForm.action = `/category/${id}?_method=PUT`; 
-                categoryForm.method = 'POST'; 
-                modalTitle.textContent = 'Edit Category';
-                categoryName.value = name;
-                openModal();
-            });
-        });
-    
-        closeModalBtn.addEventListener('click', closeModal);
-        closeModalButton.addEventListener('click', closeModal);
-    
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
-    </script>
-    
-    
+    <script src="/js/category.js"></script>
 </body>
 </html>
