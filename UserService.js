@@ -6,7 +6,7 @@ class UserService {
     }
 
     async getAllUsers() {
-        return this.db.query('SELECT * FROM User'); // Ensure this matches your table name
+        return this.db.query('SELECT * FROM User');
     }
 
     async registerUser(email, name, password) {

@@ -8,7 +8,12 @@
     "express-session": "^1.18.0",
     "method-override": "^3.0.0",
     "mysql": "^2.18.1",
-    "mysql2": "^3.11.0",
+    "mysql2": "^3.11.0"
+  },
+  "features": {
+    "buildkit": true
+  },
+  "devDependencies": {
     "nodemon": "^3.1.4"
   }
 }

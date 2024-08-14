@@ -51,7 +51,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Authentication middleware
+// middleware
 function isAuthenticated(req, res, next) {
     if (req.session.user) {
         return next();
@@ -59,7 +59,7 @@ function isAuthenticated(req, res, next) {
     res.redirect('/login');
 }
 
-// Routes
+//first page
 app.get('/', isAuthenticated, async (req, res) => {
     try {
         const [transactions, categories] = await Promise.all([
@@ -73,7 +73,7 @@ app.get('/', isAuthenticated, async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-
+//authentication
 app.get('/register', (req, res) => {
     res.render('register', { errorMessage: res.locals.errorMessage });
 });
@@ -113,7 +113,7 @@ app.get('/logout', (req, res) => {
         res.redirect('/login');
     });
 });
-
+//category
 app.get('/category', isAuthenticated, async (req, res) => {
     try {
         const categories = await categoryService.getAllCategories();
@@ -173,6 +173,8 @@ app.delete('/category/:id', isAuthenticated, async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+//transaction
 
 app.get('/transaction', isAuthenticated, async (req, res) => {
     try {

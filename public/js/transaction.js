@@ -1,7 +1,5 @@
 document.getElementById('transactionForm').addEventListener('submit', function(event) {
     var valid = true;
-
-    // Clear previous error messages
     document.getElementById('typeError').textContent = '';
     document.getElementById('amountError').textContent = '';
     document.getElementById('dateError').textContent = '';
