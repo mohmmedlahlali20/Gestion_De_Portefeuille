@@ -1,0 +1,67 @@
+document.getElementById('transactionForm').addEventListener('submit', function(event) {
+    var valid = true;
+
+    // Clear previous error messages
+    document.getElementById('typeError').textContent = '';
+    document.getElementById('amountError').textContent = '';
+    document.getElementById('dateError').textContent = '';
+    document.getElementById('categoryError').textContent = '';
+
+    var type = document.getElementById('type').value;
+    var amount = document.getElementById('amount').value;
+    var date = document.getElementById('date').value;
+    var category = document.getElementById('category').value;
+
+    if (!type) {
+        document.getElementById('typeError').textContent = 'Please select a transaction type.';
+        valid = false;
+    }
+
+    if (!amount || amount <= 0) {
+        document.getElementById('amountError').textContent = 'Please enter a valid amount greater than 0.';
+        valid = false;
+    }
+
+    if (!date) {
+        document.getElementById('dateError').textContent = 'Please select a date.';
+        valid = false;
+    } else {
+        var selectedDate = new Date(date);
+        var today = new Date();
+
+        today.setHours(0, 0, 0, 0);
+
+        if (selectedDate < today) {
+            document.getElementById('dateError').textContent = 'Date cannot be in the past.';
+            valid = false;
+        }
+    }
+
+    if (!category) {
+        document.getElementById('categoryError').textContent = 'Please select a category.';
+        valid = false;
+    }
+
+    if (!valid) {
+        event.preventDefault();
+    }
+});
+
+function deleteTransaction(id) {
+    if (confirm('Are you sure you want to delete this transaction?')) {
+        fetch(`/transaction/${id}?_method=DELETE`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Failed to delete transaction');
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
