@@ -37,33 +37,56 @@ document.querySelectorAll('.edit-button').forEach(button => {
     });
 });
 
-document.querySelectorAll('.delete-button').forEach(button => {
-button.addEventListener('click', (e) => {
-const id = e.target.getAttribute('data-id');
-if (confirm('Are you sure you want to delete this category?')) {
-    fetch(`/category/${id}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        } else {
-            return response.text();  
-        }
-    })
-    .then(data => {
-        console.log('Server response:', data); 
-        e.target.closest('tr').remove();
-    })
-    .catch(error => {
-        console.error('Error deleting category:', error);
-        alert('An error occurred while deleting the category.');
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.delete-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const id = e.target.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/category/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            return response.text();
+                        }
+                    })
+                    .then(data => {
+                        console.log('Server response:', data);
+                        e.target.closest('tr').remove();
+                        Swal.fire(
+                            'Deleted!',
+                            'The category has been deleted.',
+                            'success'
+                        );
+                    })
+                    .catch(error => {
+                        console.error('Error deleting category:', error);
+                        Swal.fire(
+                            'Error!',
+                            'An error occurred while deleting the category.',
+                            'error'
+                        );
+                    });
+                }
+            });
+        });
     });
-}
-});
 });
 
 

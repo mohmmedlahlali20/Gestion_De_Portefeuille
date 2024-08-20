@@ -1,29 +1,27 @@
-// index.js
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const crypto = require('crypto');
 const methodOverride = require('method-override');
-
 const Database = require('./database');
 const UserService = require('./UserService');
 const CategoryService = require('./CategoryService');
 const TransactionService = require('./TransactionService');
-
 const app = express();
 const port = 3000;
 const secretKey = crypto.randomBytes(32).toString('hex');
+
 const db = new Database({
     host: 'localhost',
     user: 'mohammed',
     password: 'password',
     database: 'Gestion_De_Portefeuille'
 });
+
 const userService = new UserService(db);
 const categoryService = new CategoryService(db);
 const transactionService = new TransactionService(db);
-
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -32,39 +30,29 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride('_method'));
 
-
-// Routes
 app.use(session({
     secret: secretKey,
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false }
 }));
+
 app.use((req, res, next) => {
     res.locals.user = req.session.user;
     res.locals.errorMessage = req.session.errorMessage;
     delete req.session.errorMessage;
     next();
 });
+
 function isAuthenticated(req, res, next) {
     if (req.session.user) {
+        req.user = req.session.user; 
         return next();
     }
     res.redirect('/login');
 }
-app.get('/', isAuthenticated, async (req, res) => {
-    try {
-        const [transactions, categories] = await Promise.all([
-            transactionService.getAllTransactions(),
-            categoryService.getAllCategories()
-        ]);
 
-        res.render('index', { Transaction: transactions, categories: categories });
-    } catch (err) {
-        console.error('Error fetching data:', err);
-        res.status(500).send('Internal Server Error');
-    }
-});
+// Routes non protégées
 app.get('/register', (req, res) => {
     res.render('register', { errorMessage: res.locals.errorMessage });
 });
@@ -78,6 +66,7 @@ app.post('/register', async (req, res) => {
         res.redirect('/register');
     }
 });
+
 app.get('/login', (req, res) => {
     res.render('login', { errorMessage: res.locals.errorMessage });
 });
@@ -92,6 +81,7 @@ app.post('/login', async (req, res) => {
         res.redirect('/login');
     }
 });
+
 app.get('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
@@ -100,6 +90,22 @@ app.get('/logout', (req, res) => {
         res.redirect('/login');
     });
 });
+
+// Routes
+app.get('/', isAuthenticated, async (req, res) => {
+    try {
+        const userId = req.user.id; 
+        const [transactions, categories] = await Promise.all([
+            transactionService.getTransactionsByUserId(userId),
+            categoryService.getAllCategories()
+        ]);
+        res.render('index', { Transaction: transactions, categories: categories });
+    } catch (err) {
+        console.error('Error fetching data:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 app.get('/category', isAuthenticated, async (req, res) => {
     try {
         const categories = await categoryService.getAllCategories();
@@ -109,6 +115,7 @@ app.get('/category', isAuthenticated, async (req, res) => {
         res.render('category', { errorMessage: 'An error occurred while fetching categories.' });
     }
 });
+
 app.post('/category', isAuthenticated, async (req, res) => {
     try {
         const { name } = req.body;
@@ -120,6 +127,7 @@ app.post('/category', isAuthenticated, async (req, res) => {
         res.redirect('/category');
     }
 });
+
 app.get('/category/:id/edit', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
@@ -133,6 +141,7 @@ app.get('/category/:id/edit', isAuthenticated, async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
 app.put('/category/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
@@ -144,6 +153,7 @@ app.put('/category/:id', isAuthenticated, async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
 app.delete('/category/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
@@ -154,12 +164,13 @@ app.delete('/category/:id', isAuthenticated, async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 app.get('/transaction', isAuthenticated, async (req, res) => {
     try {
         const [transactions, users, categories] = await Promise.all([
-            transactionService.getAllTransactions(), // Fetch all transactions
-            userService.getAllUsers(), // Fetch all users
-            categoryService.getAllCategories() // Fetch all categories
+            transactionService.getTransactionsByUserId(),
+            userService.getAllUsers(),
+            categoryService.getAllCategories() 
         ]);
         res.render('transaction', { transactions, users, categories });
     } catch (err) {
@@ -167,17 +178,18 @@ app.get('/transaction', isAuthenticated, async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 app.post('/transaction', isAuthenticated, async (req, res) => {
     try {
         const { category_id, amount, type, date, user_id } = req.body;
         await transactionService.createTransaction(category_id, amount, type, date, user_id);
         res.redirect('/transaction');
-    } catch (err) {
-        console.error('Error creating transaction:', err);
-        req.session.errorMessage = 'An error occurred during transaction creation.';
-        res.redirect('/transaction');
+    } catch (error) {
+        console.error('Error creating transaction:', error.message);
+        res.status(400).send('Error creating transaction');
     }
 });
+
 app.put('/transaction/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
@@ -189,17 +201,7 @@ app.put('/transaction/:id', isAuthenticated, async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-app.put('/transaction/:id', isAuthenticated, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { type, montant, category_id } = req.body;
-        await transactionService.updateTransaction(id, type, montant, category_id);
-        res.redirect('/');
-    } catch (err) {
-        console.error('Error updating transaction:', err);
-        res.status(500).send('Internal Server Error');
-    }
-});
+
 app.delete('/transaction/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
@@ -210,6 +212,7 @@ app.delete('/transaction/:id', isAuthenticated, async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });

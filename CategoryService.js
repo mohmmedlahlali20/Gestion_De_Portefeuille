@@ -4,8 +4,14 @@ class CategoryService {
     }
 
     async getAllCategories() {
-        return this.db.query('SELECT * FROM Category');
+        return this.db.query(`
+            SELECT 
+                id, name
+            FROM 
+                Category
+        `);
     }
+    
 
     async createCategory(name) {
         return this.db.query('INSERT INTO Category (name) VALUES (?)', [name]);

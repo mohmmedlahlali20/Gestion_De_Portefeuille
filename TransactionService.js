@@ -3,7 +3,7 @@ class TransactionService {
         this.db = db;
     }
 
-    async getAllTransactions() {
+    async getTransactionsByUserId(userId) {
         return this.db.query(`
             SELECT 
                 t.id, t.type, t.montant, t.date, t.user_id, c.name AS category_name
@@ -11,8 +11,12 @@ class TransactionService {
                 Transaction t
             JOIN 
                 Category c ON t.category_id = c.id
-        `);
+            WHERE 
+                t.user_id = ?
+        `, [userId]);
     }
+    
+    
 
     async getTransactionById(id) {
         const [transaction] = await this.db.query(`
